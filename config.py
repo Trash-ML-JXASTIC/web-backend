@@ -1,5 +1,4 @@
 import json
-import os
 
 def read_config():
 	with open("data.json", "r") as f:

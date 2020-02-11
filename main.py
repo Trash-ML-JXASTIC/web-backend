@@ -8,10 +8,11 @@ import config
 import json
 import numpy as np
 import os
+import pathlib
 import tensorflow as tf
 import threading
+import time
 import train
-import pathlib
 
 host = ("localhost", 8080)
 
@@ -76,11 +77,13 @@ class Request(BaseHTTPRequestHandler):
                 response = {
                     "status": "success"
                 }
-                train_path = list(pathlib.Path("./train").glob("*/*"))
-                if len(train_path) > 16:
-                    train.do_train()
-                    for item in train_path:
-                        os.remove(item)
+                if int(time.time) - config.read_config()["last"] > 86400:
+                    train_path = list(pathlib.Path("./train").glob("*/*"))
+                    if len(train_path) > 16:
+                        train.do_train()
+                        for item in train_path:
+                            os.remove(item)
+                        config.write_config("last", int(time.time))
             responseBody = json.dumps(response)
             self.wfile.write(responseBody.encode("utf-8"))
         print()
