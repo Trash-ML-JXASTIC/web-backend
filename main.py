@@ -1,16 +1,18 @@
 from http.server import HTTPServer, BaseHTTPRequestHandler
-import json
-import cgi
-import tensorflow as tf
-from tensorflow.keras.models import Sequential
 from tensorflow.keras.models import load_model
+from tensorflow.keras.models import Sequential
 from tensorflow.keras.preprocessing import image
 from tensorflow.nn import leaky_relu
-import matplotlib.pyplot as plt
+import cgi
+import config
+import json
 import numpy as np
 import os
+import tensorflow as tf
+import threading
+import train
+import pathlib
 
-data = {"result": "this is a test"}
 host = ("localhost", 8080)
 
 class Request(BaseHTTPRequestHandler):
@@ -58,20 +60,27 @@ class Request(BaseHTTPRequestHandler):
                 image_tensor = image.img_to_array(img)
                 image_tensor = np.expand_dims(image_tensor, axis=0)
                 image_tensor /= 255.
+                model = load_model("trash.h5", custom_objects={"leaky_relu": leaky_relu})
                 pred = model.predict(image_tensor)
-                pred_class = model.predict_classes(image_tensor)
-                print("Raw prediction data:", pred)
-                print("Raw prediction class data:", pred_class)
+                pred_class = np.argmax(pred, axis=1)
+                print("[PREDICT] Raw prediction data:", pred)
+                print("[PREDICT] Raw prediction class data: ", pred_class)
                 response = {
                     "status": "success",
-                    "result": pred_class.tolist()
+                    "result": pred_class.tolist(),
+                    "probabilities": pred.tolist()
                 }
             elif self.path == "/train":
-                with open("train/" + labels_index[form["type"].type] + filename, "wb") as f:
+                with open("train/" + labels_index[int(form["type"].value)] + "/" + filename, "wb") as f:
                     f.write(fileValue)
                 response = {
                     "status": "success"
                 }
+                train_path = list(pathlib.Path("./train").glob("*/*"))
+                if len(train_path) > 16:
+                    train.do_train()
+                    for item in train_path:
+                        os.remove(item)
             responseBody = json.dumps(response)
             self.wfile.write(responseBody.encode("utf-8"))
         print()
@@ -86,7 +95,6 @@ if __name__ == "__main__":
     config = tf.ConfigProto()
     config.gpu_options.allow_growth = True
     session = tf.Session(config=config)
-    model = load_model("trash.h5", custom_objects={"leaky_relu": leaky_relu})
     server = HTTPServer(host, Request)
     print("Starting server, listen at: %s:%s" % host)
     server.serve_forever()
