@@ -13,6 +13,7 @@ import tensorflow as tf
 import threading
 import time
 import train
+import weight
 
 host = ("localhost", 8080)
 
@@ -79,11 +80,13 @@ class Request(BaseHTTPRequestHandler):
                 }
                 if int(time.time) - config.read_config()["last"] > 86400:
                     train_path = list(pathlib.Path("./train").glob("*/*"))
-                    if len(train_path) > 16:
+                    train_count = len(train_path)
+                    if train_count > int(config.read_config("in")):
+                        config.write_config("last", int(time.time))
+                        config.write_config("in", weight.get_new_n(train_count))
                         train.do_train()
                         for item in train_path:
                             os.remove(item)
-                        config.write_config("last", int(time.time))
             responseBody = json.dumps(response)
             self.wfile.write(responseBody.encode("utf-8"))
         print()
