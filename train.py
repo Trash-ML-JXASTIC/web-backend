@@ -79,7 +79,7 @@ def do_train():
 	print("[TRAIN] model:")
 	model.summary()
 
-	outputs = [model_old(ds_input), model_old(ds_input)]
+	outputs = [model_old(ds_input), model(ds_input)]
 	y = tf.keras.layers.Average()(outputs)
 	model_new = Model(ds_input, y, name="ensemble")
 	print("[TRAIN] model_new:")
