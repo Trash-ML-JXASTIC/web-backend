@@ -7,6 +7,7 @@ from tensorflow.keras.preprocessing.image import ImageDataGenerator
 import config as conf
 import os
 import tensorflow as tf
+import time
 
 def do_train():
 	if conf.read_config()["training"] == 1:
@@ -51,7 +52,7 @@ def do_train():
 	pool1 = GlobalAveragePooling2D(name="pool1")(conv4)
 	act1 = Activation(name="act1", activation="softmax")(pool1)
 
-	model = Model(inputs=ds_input, outputs=act1)
+	model = Model(inputs=ds_input, outputs=act1, name="model" + str(int(time.time())))
 
 	model.compile(loss="categorical_crossentropy",
 				optimizer="rmsprop", metrics=["accuracy"])
@@ -72,7 +73,6 @@ def do_train():
 	model.save("trash_new.h5")
 
 	model_old = load_model("trash.h5", custom_objects={"leaky_relu": tf.nn.leaky_relu})
-	model = load_model("trash_new.h5", custom_objects={"leaky_relu": tf.nn.leaky_relu})
 
 	print("[TRAIN] model_old:")
 	model_old.summary()
@@ -89,3 +89,5 @@ def do_train():
 	conf.write_config("training", 0)
 
 	print("[TRAIN] Completed.")
+
+do_train()

@@ -78,11 +78,11 @@ class Request(BaseHTTPRequestHandler):
                 response = {
                     "status": "success"
                 }
-                if int(time.time) - config.read_config()["last"] > 86400:
+                if int(time.time()) - config.read_config()["last"] > 86400:
                     train_path = list(pathlib.Path("./train").glob("*/*"))
                     train_count = len(train_path)
                     if train_count > int(config.read_config("in")):
-                        config.write_config("last", int(time.time))
+                        config.write_config("last", int(time.time()))
                         config.write_config("in", weight.get_new_n(train_count))
                         train.do_train()
                         for item in train_path:
