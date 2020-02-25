@@ -90,4 +90,3 @@ def do_train():
 
 	print("[TRAIN] Completed.")
 
-do_train()
