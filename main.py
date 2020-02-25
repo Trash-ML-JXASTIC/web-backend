@@ -4,7 +4,7 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.preprocessing import image
 from tensorflow.nn import leaky_relu
 import cgi
-import config
+import config as conf
 import json
 import numpy as np
 import os
@@ -78,12 +78,12 @@ class Request(BaseHTTPRequestHandler):
                 response = {
                     "status": "success"
                 }
-                if int(time.time()) - config.read_config()["last"] > 86400:
+                if int(time.time()) - conf.read_config()["last"] > 86400:
                     train_path = list(pathlib.Path("./train").glob("*/*"))
                     train_count = len(train_path)
-                    if train_count > int(config.read_config("in")):
-                        config.write_config("last", int(time.time()))
-                        config.write_config("in", weight.get_new_n(train_count))
+                    if train_count > int(conf.read_config()["in"]):
+                        conf.write_config("last", int(time.time()))
+                        conf.write_config("in", weight.get_new_n(train_count))
                         train.do_train()
                         for item in train_path:
                             os.remove(item)
