@@ -27,7 +27,7 @@ def load_image(img_path, show=False):
 
     return img_tensor
 
-model = load_model("trash.h5", custom_objects={"leaky_relu": leaky_relu})
+model = load_model("model/trash.h5", custom_objects={"leaky_relu": leaky_relu})
 
 print("Input image filename without extension (.jpg): ", end = "")
 img_filename = input()

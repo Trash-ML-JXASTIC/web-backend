@@ -12,7 +12,7 @@ def init_config():
         f.write(w)
 
 def read_config():
-    if (not os.path.exists("trash.h5")):
+    if (not os.path.exists("model/trash.h5")):
         init_config()
     with open("data.json", "r") as f:
         for line in f:

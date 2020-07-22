@@ -72,7 +72,7 @@ def do_train():
 
 	model.save("trash_new.h5")
 
-	model_old = load_model("trash.h5", custom_objects={"leaky_relu": tf.nn.leaky_relu})
+	model_old = load_model("model/trash.h5", custom_objects={"leaky_relu": tf.nn.leaky_relu})
 
 	print("[TRAIN] model_old:")
 	model_old.summary()
@@ -84,9 +84,8 @@ def do_train():
 	model_new = Model(ds_input, y, name="ensemble")
 	print("[TRAIN] model_new:")
 	model_new.summary()
-	model_new.save("trash.h5")
+	model_new.save("model/trash.h5")
 
 	conf.write_config("training", 0)
 
 	print("[TRAIN] Completed.")
-

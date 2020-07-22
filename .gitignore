@@ -268,7 +268,9 @@ modules.xml
 ### Others ###
 *.ignore
 *.old
-*.h5
 test/
 upload/
 train/
+model/
+crop/
+ssd/

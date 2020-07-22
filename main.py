@@ -14,6 +14,7 @@ import threading
 import time
 import train
 import weight
+import crop
 
 host = ("localhost", 8080)
 
@@ -57,20 +58,28 @@ class Request(BaseHTTPRequestHandler):
             if self.path == "/get":
                 with open("upload/" + filename, "wb") as f:
                     f.write(fileValue)
-                img = image.load_img("upload/" + filename, target_size=(256, 256))
+                crop.ssd_process(img_path="upload/" + filename, crop_path="crop", show=False)
                 os.remove("upload/" + filename)
-                image_tensor = image.img_to_array(img)
-                image_tensor = np.expand_dims(image_tensor, axis=0)
-                image_tensor /= 255.
-                model = load_model("trash.h5", custom_objects={"leaky_relu": leaky_relu})
-                pred = model.predict(image_tensor)
-                pred_class = np.argmax(pred, axis=1)
-                print("[PREDICT] Raw prediction data:", pred)
-                print("[PREDICT] Raw prediction class data: ", pred_class)
+                files = glob.glob(crop_path + "/*")
+                pred_result = []
+                pred_probabilities = []
+                for index, f in enumerate(files):
+                    img = image.load_img(f, target_size=(256, 256))
+                    image_tensor = image.img_to_array(img)
+                    image_tensor = np.expand_dims(image_tensor, axis=0)
+                    image_tensor /= 255.
+                    model = load_model("model/trash.h5", custom_objects={"leaky_relu": leaky_relu})
+                    pred = model.predict(image_tensor)
+                    pred_class = np.argmax(pred, axis=1)
+                    pred_result.append(pred)
+                    pred_probabilities.append(pred)
+                    print("[PREDICT] Crop name:", f)
+                    print("[PREDICT] Raw prediction data:", pred)
+                    print("[PREDICT] Raw prediction class data: ", pred_class)
                 response = {
                     "status": "success",
-                    "result": pred_class.tolist(),
-                    "probabilities": pred.tolist()
+                    "result": pred_result,
+                    "probabilities": pred_probabilities
                 }
             elif self.path == "/train":
                 with open("train/" + labels_index[int(form["type"].value)] + "/" + filename, "wb") as f:
